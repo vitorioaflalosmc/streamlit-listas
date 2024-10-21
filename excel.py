@@ -25,7 +25,8 @@ def preencher_excel_com_json(json_filename, novo_excel_filename):
 
             if app is None:
                 st.error("Não foi possível iniciar o Excel.")
-                return
+            else:
+                st.text("Não está none")
 
             wb = app.books.open(template1)
             ws = wb.sheets.active # Usar a primeira planilha ativa
