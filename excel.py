@@ -1,4 +1,5 @@
 import json
+import openpyxl as oxl
 import xlwings as xw
 import streamlit as st
 
@@ -18,47 +19,38 @@ def preencher_excel_com_json(json_filename, novo_excel_filename):
         # Carregar o JSON salvo
         with open(json_filename, 'r') as f:
             dados_json = json.load(f)
-        
+
         if json_filename.startswith("lista1"):
+            # Passo 1: Abrir o arquivo com xlwings (para garantir que o cabeçalho e rodapé não sejam removidos)
             with xw.App(visible=False) as app:
-                wb = app.books.open(template1)
-                ws = wb.sheets.active 
+                wb_xlwings = app.books.open(template1)
+                wb_xlwings.save(novo_excel_filename)  # Salvar uma cópia do arquivo original
+                wb_xlwings.close()
 
-                if app is None:
-                    st.error("Não foi possível iniciar o Excel.")
-                else:
-                    st.text("Não está none")
+            # Passo 2: Abrir o arquivo salvo com openpyxl e fazer as alterações
+            wb = oxl.load_workbook(novo_excel_filename)
+            ws = wb.active  # Usar a primeira planilha ativa
 
-                wb = app.books.open(template1)
-                ws = wb.sheets.active # Usar a primeira planilha ativa
-                
-                # Preencher as células com os dados do JSON
-                ws.range('B4').value = dados_json.get("Tema", "")
-                ws.range('B5').value = dados_json.get("Palestrante", "")
-                ws.range('B6').value = dados_json.get("Publico Alvo", "")
-                ws.range('B7').value = dados_json.get("Data", "")
-                ws.range('B8').value = dados_json.get("Horario de Inicio", "")
-                ws.range('D8').value = dados_json.get("Horario de Fim", "")
-                ws.range('B9').value = dados_json.get("Carga Horaria", "")
-                ws.range('B10').value = dados_json.get("Plataforma Online", "")
-                ws.range('B11').value = dados_json.get("Contrato de Gestao", "")
-                
-                # Definir formatação: tamanho 20, fonte Calibri, cor preta, sem negrito
-                cell_ranges = ['B4', 'B5', 'B6', 'B7', 'B8', 'D8', 'B9', 'B10', 'B11']
-                for cell in cell_ranges:
-                    cell_range = ws.range(cell)
-                    cell_range.api.Font.Size = 20
-                    cell_range.api.Font.Name = "Calibri"
-                    cell_range.api.Font.Bold = True
-                    cell_range.api.Font.Color = 0x000000  # Cor preta (0x000000 em hexadecimal)
-                    # Alinhar à esquerda
-                    cell_range.api.HorizontalAlignment = -4131  # Constante para xlLeft
-                    ws.api.PageSetup.PrintArea = ws.range('A1:D1000').api.Address  # Ajuste o range conforme o necessário
-                
-                # Salvar o novo arquivo Excel, mantendo o cabeçalho e rodapé
-                wb.save(novo_excel_filename)
-                wb.close()  # Fechar o workbook após salvar
-                app.quit()  # Fechar o aplicativo Excel completamente
+            # Preencher as células com os dados do JSON
+            ws['B4'] = dados_json.get("Tema", "")
+            ws['B5'] = dados_json.get("Palestrante", "")
+            ws['B6'] = dados_json.get("Publico Alvo", "")
+            ws['B7'] = dados_json.get("Data", "")
+            ws['B8'] = dados_json.get("Horario de Inicio", "")
+            ws['D8'] = dados_json.get("Horario de Fim", "")
+            ws['B9'] = dados_json.get("Carga Horaria", "")
+            ws['B10'] = dados_json.get("Plataforma Online", "")
+            ws['B11'] = dados_json.get("Contrato de Gestao", "")
+            
+            # Definir formatação básica com openpyxl
+            cell_ranges = ['B4', 'B5', 'B6', 'B7', 'B8', 'D8', 'B9', 'B10', 'B11']
+            for cell in cell_ranges:
+                ws[cell].font = oxl.styles.Font(size=20, name="Calibri", bold=True)
+                ws[cell].alignment = oxl.styles.Alignment(horizontal="left")
+            
+            # Salvar as alterações com openpyxl
+            wb.save(novo_excel_filename)
+            wb.close()
 
             st.success(f"Novo arquivo Excel salvo como: {novo_excel_filename}")
 
