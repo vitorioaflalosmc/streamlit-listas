@@ -1,5 +1,4 @@
 import json
-import openpyxl as oxl
 import xlwings as xw
 import streamlit as st
 
@@ -19,47 +18,45 @@ def preencher_excel_com_json(json_filename, novo_excel_filename):
         # Carregar o JSON salvo
         with open(json_filename, 'r') as f:
             dados_json = json.load(f)
-        
+
         if json_filename.startswith("lista1"):
             with xw.App(visible=False) as app:
-                wb = app.books.open(template1)
-                ws = wb.sheets.active 
+                try:
+                    wb = app.books.open(template1)  # Abre o template uma única vez
+                    ws = wb.sheets.active
 
-                if app is None:
-                    st.error("Não foi possível iniciar o Excel.")
-                else:
-                    st.text("Não está none")
+                    # Preencher as células com os dados do JSON
+                    ws.range('B4').value = dados_json.get("Tema", "")
+                    ws.range('B5').value = dados_json.get("Palestrante", "")
+                    ws.range('B6').value = dados_json.get("Publico Alvo", "")
+                    ws.range('B7').value = dados_json.get("Data", "")
+                    ws.range('B8').value = dados_json.get("Horario de Inicio", "")
+                    ws.range('D8').value = dados_json.get("Horario de Fim", "")
+                    ws.range('B9').value = dados_json.get("Carga Horaria", "")
+                    ws.range('B10').value = dados_json.get("Plataforma Online", "")
+                    ws.range('B11').value = dados_json.get("Contrato de Gestao", "")
 
-                wb = app.books.open(template1)
-                ws = wb.sheets.active # Usar a primeira planilha ativa
-                
-                # Preencher as células com os dados do JSON
-                ws.range('B4').value = dados_json.get("Tema", "")
-                ws.range('B5').value = dados_json.get("Palestrante", "")
-                ws.range('B6').value = dados_json.get("Publico Alvo", "")
-                ws.range('B7').value = dados_json.get("Data", "")
-                ws.range('B8').value = dados_json.get("Horario de Inicio", "")
-                ws.range('D8').value = dados_json.get("Horario de Fim", "")
-                ws.range('B9').value = dados_json.get("Carga Horaria", "")
-                ws.range('B10').value = dados_json.get("Plataforma Online", "")
-                ws.range('B11').value = dados_json.get("Contrato de Gestao", "")
-                
-                # Definir formatação: tamanho 20, fonte Calibri, cor preta, sem negrito
-                cell_ranges = ['B4', 'B5', 'B6', 'B7', 'B8', 'D8', 'B9', 'B10', 'B11']
-                for cell in cell_ranges:
-                    cell_range = ws.range(cell)
-                    cell_range.api.Font.Size = 20
-                    cell_range.api.Font.Name = "Calibri"
-                    cell_range.api.Font.Bold = True
-                    cell_range.api.Font.Color = 0x000000  # Cor preta (0x000000 em hexadecimal)
-                    # Alinhar à esquerda
-                    cell_range.api.HorizontalAlignment = -4131  # Constante para xlLeft
-                    ws.api.PageSetup.PrintArea = ws.range('A1:D1000').api.Address  # Ajuste o range conforme o necessário
-                
-                # Salvar o novo arquivo Excel, mantendo o cabeçalho e rodapé
-                wb.save(novo_excel_filename)
-                wb.close()  # Fechar o workbook após salvar
-                app.quit()  # Fechar o aplicativo Excel completamente
+                    # Definir formatação: tamanho 20, fonte Calibri, cor preta, sem negrito
+                    cell_ranges = ['B4', 'B5', 'B6', 'B7', 'B8', 'D8', 'B9', 'B10', 'B11']
+                    for cell in cell_ranges:
+                        cell_range = ws.range(cell)
+                        cell_range.api.Font.Size = 20
+                        cell_range.api.Font.Name = "Calibri"
+                        cell_range.api.Font.Bold = True
+                        cell_range.api.Font.Color = 0x000000  # Cor preta
+                        # Alinhar à esquerda
+                        cell_range.api.HorizontalAlignment = -4131  # Constante para xlLeft
+
+                    ws.api.PageSetup.PrintArea = ws.range('A1:D1000').api.Address  # Ajuste o range conforme necessário
+
+                    # Salvar o novo arquivo Excel, mantendo o cabeçalho e rodapé
+                    wb.save(novo_excel_filename)
+
+                except Exception as e:
+                    st.error(f"Ocorreu um erro ao manipular o Excel: {e}")
+                finally:
+                    wb.close()  # Fechar o workbook após salvar
+                    app.quit()  # Fechar o aplicativo Excel completamente
 
             st.success(f"Novo arquivo Excel salvo como: {novo_excel_filename}")
 
