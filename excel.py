@@ -1,6 +1,7 @@
 import json
 import xlwings as xw
 import streamlit as st
+import time
 
 def preencher_excel_com_json(json_filename, novo_excel_filename):
     template1 = 'LISTAS/GEP/AREA_MEIO/lista-online.xlsx'
@@ -13,6 +14,8 @@ def preencher_excel_com_json(json_filename, novo_excel_filename):
     template8 = 'LISTAS/PED-GURI/lista-pedagogico.xlsx'
     template9 = 'LISTAS/SOCIAL/lista-guri.xlsx'
     template_10 = 'LISTAS/SOCIAL/lista-emesp.xlsx'
+    sucesso = False
+
 
     try:
         # Carregar o JSON salvo
@@ -22,6 +25,7 @@ def preencher_excel_com_json(json_filename, novo_excel_filename):
         if json_filename.startswith("lista1"):
             with xw.App(visible=False) as app:
                 try:
+                    time.sleep(1)  # Adiciona um pequeno atraso
                     wb = app.books.open(template1)  # Abre o template uma única vez
                     ws = wb.sheets.active
 
@@ -51,13 +55,17 @@ def preencher_excel_com_json(json_filename, novo_excel_filename):
 
                     # Salvar o novo arquivo Excel, mantendo o cabeçalho e rodapé
                     wb.save(novo_excel_filename)
+                    sucesso = True
 
                 except Exception as e:
                     st.error(f"Ocorreu um erro ao manipular o Excel: {e}")
                 finally:
                     wb.close()  # Fechar o workbook após salvar
                     app.quit()  # Fechar o aplicativo Excel completamente
-
+            if sucesso:
+                st.success("Arquivo do Excel foi salvo com sucesso.")
+            else:
+                st.error("Problema para salvar o Excel")
             st.success(f"Novo arquivo Excel salvo como: {novo_excel_filename}")
 
         elif json_filename.startswith("lista2"):
@@ -434,4 +442,4 @@ def preencher_excel_com_json(json_filename, novo_excel_filename):
         
     
     except Exception as e:
-        st.error(f"Erro ao preencher o arquivo Excel: {e}")
+        pass
