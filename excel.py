@@ -442,4 +442,4 @@ def preencher_excel_com_json(json_filename, novo_excel_filename):
         
     
     except Exception as e:
-        pass
+        st.error(f'Houve erro no Excel? {e}')
